@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { DeviceSettings, useCall, useCallStateHooks, VideoPreview } from "@stream-io/video-react-sdk";
-import Alert from "./Alert";
+import Alert from "@/components/Alert";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 

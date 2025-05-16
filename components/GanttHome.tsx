@@ -30,16 +30,12 @@ const GanttHome: React.FC = () => {
   useEffect(() => {
     const fetchUserTeams = async () => {
       if (authLoading) {
-        // Auth context is still loading user data, wait.
-        // setLoading(true); // Keep local loading true or let the main authLoading check handle UI
         return;
       }
 
       if (!currentUser || !currentUser._id || !token) {
-        // Auth is done, but no valid user or token.
         setLoading(false);
-        setJoinedTeams([]); // Ensure no stale data
-        // setError("User not authenticated or token not available."); // Optionally set an error
+        setJoinedTeams([]);
         return;
       }
 
@@ -115,6 +111,11 @@ const GanttHome: React.FC = () => {
           }
         }
         setJoinedTeams(teamsUserIsIn);
+
+        // Set first team as default if none selected
+        if (teamsUserIsIn.length > 0 && !selectedTeamId) {
+          setSelectedTeamId(teamsUserIsIn[0]._id);
+        }
       } catch (err: any) {
         setError(err.message || "An error occurred while fetching team data.");
         console.error(err);
@@ -124,7 +125,8 @@ const GanttHome: React.FC = () => {
     };
 
     fetchUserTeams();
-  }, [currentUser, token, authLoading]); // Add authLoading to dependency array
+    // Add selectedTeamId to dependency array so it doesn't reset if user already selected
+  }, [currentUser, token, authLoading, selectedTeamId]);
 
   if (authLoading) {
     // Prioritize authLoading check
@@ -174,7 +176,6 @@ const GanttHome: React.FC = () => {
             onChange={(e) => setSelectedTeamId(e.target.value)}
             className="h-10 mt-1 block w-full max-w-md pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm"
           >
-            <option value="">-- Please select a team --</option>
             {joinedTeams.map((team) => (
               <option key={team._id} value={team._id}>
                 {team.name}
