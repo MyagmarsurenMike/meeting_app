@@ -5,7 +5,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import SessionClientProvider from "@/components/SessionProvider";
 
 const geistSans = Geist({
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
   title: "Tuluvluy",
   description: "A video conferencing app",
   icons: {
-    icon: "https://meeting-app-navy.vercel.app/assets/logo.png",
+    icon: "https://tuluvluy.digital/assets/logo.png",
   },
 };
 
@@ -39,7 +38,6 @@ export default function RootLayout({
         >
           <SessionClientProvider>{children}</SessionClientProvider>
           <Toaster />
-          <SpeedInsights />
         </body>
       </html>
     </AuthProvider>

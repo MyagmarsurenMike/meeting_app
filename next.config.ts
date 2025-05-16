@@ -3,9 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
+      { protocol: "https", hostname: "tuluvluy.digital" },
       { protocol: "https", hostname: "meeting-app-navy.vercel.app" },
-      { protocol: "http", hostname: "localhost:3000" },
-      { protocol: "http", hostname: "192.168.56.1:3000" },
+      { protocol: "http", hostname: "localhost", port: "3000" },
     ],
   },
   typescript: { ignoreBuildErrors: true },

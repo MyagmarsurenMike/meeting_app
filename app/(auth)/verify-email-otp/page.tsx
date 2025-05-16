@@ -23,7 +23,7 @@ if (process.env.NODE_ENV !== "test") {
   });
 }
 
-const logoUrl = "https://meeting-app-navy.vercel.app/assets/logo.png";
+const logoUrl = "https://tuluvluy.digital/assets/logo.png";
 
 // ✅ Send verification email
 export async function sendVerificationCodeEmail(
