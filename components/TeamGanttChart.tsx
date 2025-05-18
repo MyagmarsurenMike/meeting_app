@@ -26,7 +26,7 @@ interface ProjectTask {
   progress: number;
   type: "task" | "milestone";
   teamId: string;
-  assignedTo?: string;
+  assignedTo?: string[]; // Change here
 }
 
 interface GanttTask extends Task {
@@ -36,7 +36,7 @@ interface GanttTask extends Task {
   end: Date;
   progress: number;
   type: "task" | "milestone";
-  assignedTo?: string;
+  assignedTo?: string[]; // Change here
 }
 
 interface TeamMember {
@@ -60,7 +60,7 @@ const TeamGanttChart: React.FC<TeamGanttChartProps> = ({
     endDate: "",
     progress: 0,
     type: "task" as "task" | "milestone",
-    assignedTo: "",
+    assignedTo: [] as string[], // Change here
   });
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [editTask, setEditTask] = useState<GanttTask | null>(null);
@@ -129,6 +129,10 @@ const TeamGanttChart: React.FC<TeamGanttChartProps> = ({
     // Prevent double submission
     if (addTask.loading) return;
     addTask.loading = true;
+    if (!newTask.name || !newTask.startDate || !newTask.endDate) {
+      setError("Please fill in all required fields.");
+      return;
+    }
     try {
       const response = await axios.post(`/api/teams/${teamId}/tasks`, newTask, {
         headers: { Authorization: `Bearer ${token}` },
@@ -140,7 +144,7 @@ const TeamGanttChart: React.FC<TeamGanttChartProps> = ({
           endDate: "",
           progress: 0,
           type: "task",
-          assignedTo: "",
+          assignedTo: [] as string[],
         });
         setIsModalOpen(false);
         await fetchTasks(token); // Await to ensure only one update
@@ -176,7 +180,7 @@ const TeamGanttChart: React.FC<TeamGanttChartProps> = ({
         endDate: newTask.endDate, // newTask.endDate is already a 'YYYY-MM-DD' string
         progress: currentProgress, // Send the freshly calculated progress
         type: newTask.type,
-        assignedTo: newTask.assignedTo || undefined, // Send undefined if empty string for "Unassigned"
+        assignedTo: newTask.assignedTo.length > 0 ? newTask.assignedTo : undefined,
       };
 
       const response = await axios.patch(
@@ -213,7 +217,7 @@ const TeamGanttChart: React.FC<TeamGanttChartProps> = ({
       endDate: "",
       progress: 0,
       type: "task",
-      assignedTo: "",
+      assignedTo: [] as string[],
     });
     setIsModalOpen(true);
   };
@@ -229,7 +233,7 @@ const TeamGanttChart: React.FC<TeamGanttChartProps> = ({
       endDate: endDate,
       progress: calculateProgress(startDate, endDate),
       type: task.type,
-      assignedTo: task.assignedTo || "",
+      assignedTo: task.assignedTo || [],
     });
     setIsModalOpen(true);
   };
@@ -405,23 +409,64 @@ const TeamGanttChart: React.FC<TeamGanttChartProps> = ({
               </select>
 
               {/* Assign to team member */}
-              <select
-                value={newTask.assignedTo}
-                onChange={(e) =>
-                  setNewTask({
-                    ...newTask,
-                    assignedTo: e.target.value,
-                  })
-                }
-                className="border p-2 w-full sm:col-span-2"
-              >
-                <option value="">Unassigned</option>
-                {teamMembers.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name}
-                  </option>
-                ))}
-              </select>
+              <div className="sm:col-span-2">
+                <label className="block font-medium mb-1">Assign to:</label>
+                <div className="mb-2">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newTask.assignedTo.length === 0 && teamMembers.length > 0}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setNewTask({ ...newTask, assignedTo: [] }); // All members
+                        }
+                      }}
+                    />
+                    <span className="ml-2">All Members</span>
+                  </label>
+                </div>
+                <div className="grid grid-cols-1 gap-1">
+                  {teamMembers.map((member) => (
+                    <label key={member.id} className="inline-flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={
+                          newTask.assignedTo.length === 0
+                            ? true // All members selected
+                            : newTask.assignedTo.includes(member.id)
+                        }
+                        onChange={(e) => {
+                          let updated: string[];
+                          if (e.target.checked) {
+                            // Add member
+                            updated = [...new Set([...newTask.assignedTo, member.id])];
+                            // If all are checked, treat as all members (empty array)
+                            if (
+                              updated.length === teamMembers.length ||
+                              updated.length === 0
+                            ) {
+                              setNewTask({ ...newTask, assignedTo: [] });
+                            } else {
+                              setNewTask({ ...newTask, assignedTo: updated });
+                            }
+                          } else {
+                            // Remove member
+                            updated = newTask.assignedTo.filter((id) => id !== member.id);
+                            // If none checked, treat as all members (empty array)
+                            if (updated.length === 0) {
+                              setNewTask({ ...newTask, assignedTo: [] });
+                            } else {
+                              setNewTask({ ...newTask, assignedTo: updated });
+                            }
+                          }
+                        }}
+                        disabled={newTask.assignedTo.length === 0}
+                      />
+                      <span className="ml-2">{member.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-end mt-4">
               <button
@@ -471,20 +516,30 @@ const TeamGanttChart: React.FC<TeamGanttChartProps> = ({
                   end: task.end,
                   progress: task.progress,
                   type: task.type as "task" | "milestone",
-                  assignedTo: (task as any).assignedTo,
+                  assignedTo: (task as GanttTask).assignedTo, // <-- cast here
                 })
               }
               TooltipContent={({ task }) => {
-                const assignedMember = teamMembers.find(
-                  (m) => m.id === (task as any).assignedTo
+                const ganttTask = task as GanttTask; // <-- cast here
+                if (!ganttTask.assignedTo || ganttTask.assignedTo.length === 0) {
+                  return (
+                    <div className="p-2">
+                      <h3 className="font-bold">{ganttTask.name}</h3>
+                      <p>Progress: {ganttTask.progress}%</p>
+                      <p>Assigned to: All Members</p>
+                    </div>
+                  );
+                }
+                const assignedMembers = teamMembers.filter((m) =>
+                  ganttTask.assignedTo?.includes(m.id)
                 );
                 return (
                   <div className="p-2">
-                    <h3 className="font-bold">{task.name}</h3>
-                    <p>Progress: {task.progress}%</p>
-                    {assignedMember && (
-                      <p>Assigned to: {assignedMember.name}</p>
-                    )}
+                    <h3 className="font-bold">{ganttTask.name}</h3>
+                    <p>Progress: {ganttTask.progress}%</p>
+                    <p>
+                      Assigned to: {assignedMembers.map((m) => m.name).join(", ")}
+                    </p>
                   </div>
                 );
               }}

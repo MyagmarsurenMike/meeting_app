@@ -9,7 +9,11 @@ const ProjectTaskSchema = new Schema(
     progress: { type: Number, default: 0, min: 0, max: 100 },
     type: { type: String, enum: ["task", "milestone"], default: "task" },
     teamId: { type: String, required: true }, // Changed from userId to teamId
-    assignedTo: { type: String }, // Which team member is assigned to this task
+    assignedTo: {
+      type: [String],
+      default: [],
+      required: false,
+    },
   },
   { timestamps: true }
 );

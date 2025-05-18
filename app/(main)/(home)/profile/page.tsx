@@ -148,7 +148,7 @@ export default function ProfilePage() {
 
   if (error) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center">
+      <main className="flex flex-col items-center justify-center">
         <div className="text-xl text-red-500">{error}</div>
         <Link href="/" className="mt-4 text-blue-600 hover:underline">
           Return to Home
@@ -158,7 +158,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center pt-36 px-4 sm:px-8 md:px-16 bg-gray-50 pb-16">
+    <main className="flex flex-col items-center pt-20 px-4 sm:px-8 md:px-16 bg-gray-50 pb-16">
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden">
         {/* Profile header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 md:p-8">

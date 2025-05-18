@@ -36,46 +36,52 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id: teamId } = await params; // Renamed for clarity
+  try {
+    const { id: teamId } = await params; // Renamed for clarity
 
-  const auth = req.headers.get("authorization") || "";
-  if (!auth.startsWith("Bearer "))
-    return NextResponse.json(
-      { success: false, message: "Not authorized" },
-      { status: 401 }
-    );
+    const auth = req.headers.get("authorization") || "";
+    if (!auth.startsWith("Bearer "))
+      return NextResponse.json(
+        { success: false, message: "Not authorized" },
+        { status: 401 }
+      );
 
-  const decoded = await verifyToken(auth.split(" ")[1]);
-  if (!decoded?.id)
-    return NextResponse.json(
-      { success: false, message: "Invalid token" },
-      { status: 401 }
-    );
+    const decoded = await verifyToken(auth.split(" ")[1]);
+    if (!decoded?.id)
+      return NextResponse.json(
+        { success: false, message: "Invalid token" },
+        { status: 401 }
+      );
 
-  if (!mongoose.Types.ObjectId.isValid(teamId))
-    return NextResponse.json(
-      { success: false, message: "Invalid team ID" },
-      { status: 400 }
-    );
+    if (!mongoose.Types.ObjectId.isValid(teamId))
+      return NextResponse.json(
+        { success: false, message: "Invalid team ID" },
+        { status: 400 }
+      );
 
-  await connectToDatabase();
+    await connectToDatabase();
 
-  // Ensure user is an admin of the team
-  const team = await Team.findOne({ _id: teamId, admins: decoded.id }); // Check if user is in admins array
-  if (!team) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Team not found or user is not an admin of this team",
-      },
-      { status: 403 } // Forbidden if not an admin
-    );
+    // Ensure user is an admin of the team
+    const team = await Team.findOne({ _id: teamId, admins: decoded.id }); // Check if user is in admins array
+    if (!team) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Team not found or user is not an admin of this team",
+        },
+        { status: 403 } // Forbidden if not an admin
+      );
+    }
+
+    const taskData = await req.json();
+    console.log("Creating ProjectTask with:", taskData, "teamId:", teamId);
+    const task = await ProjectTask.create({ ...taskData, teamId: teamId });
+
+    return NextResponse.json({ success: true, task }, { status: 201 });
+  } catch (err) {
+    console.error("POST /api/teams/[id]/tasks error:", err); // Add this line
+    return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
   }
-
-  const taskData = await req.json();
-  const task = await ProjectTask.create({ ...taskData, teamId: teamId });
-
-  return NextResponse.json({ success: true, task }, { status: 201 });
 }
