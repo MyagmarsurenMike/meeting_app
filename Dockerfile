@@ -8,9 +8,9 @@ RUN npm ci --legacy-peer-deps
 
 COPY . .
 
-COPY .env .env
+COPY .env /app/.env
 
-RUN npm run start
+RUN npm run build
 
 EXPOSE 3000
 
