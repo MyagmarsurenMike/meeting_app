@@ -20,13 +20,13 @@ jobs:
       - name: Push Docker Image
         run: docker push myagmarsurenmike/meeting-app:latest
 
-    deploy:
-      needs: build
-      runs-on: self-hosted
-      steps:
-        - name: Pull Docker Image
-          run: docker pull myagmarsurenmike/meeting-app:latest
-        - name : Delete old container
-          run: docker rm -f meeting-app-container || true
-        - name: Run docker container
-          run: docker run -d -p 3000:3000 --name meeting-app-container myagmarsurenmike/meeting-app
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Pull Docker Image
+        run: docker pull myagmarsurenmike/meeting-app:latest
+      - name : Delete old container
+        run: docker rm -f meeting-app-container || true
+      - name: Run docker container
+        run: docker run -d -p 3000:3000 --name meeting-app-container myagmarsurenmike/meeting-app
