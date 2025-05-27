@@ -8,7 +8,7 @@ RUN npm ci --legacy-peer-deps
 
 COPY . .
 
-COPY .env.local .env.local  # Ensure environment variables are included
+COPY .env .env
 
 RUN npm run build
 
