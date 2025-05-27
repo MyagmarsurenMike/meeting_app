@@ -12,12 +12,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Login to Docker Hub
-        run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
       - name: Create .env file
-        run: echo "MONGO_PASSWORD"='${{ secrets.MONGO_PASSWORD }}' >> .env && echo "SITE_URL"='${{ secrets.SITE_URL }}' >> .env 
-      - name : Build Docker Image
-        run: docker build -t myagmarsurenmike/meeting-app .
+        run: |
+          echo "MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}" > .env
+          echo "SITE_URL=${{ secrets.SITE_URL }}" >> .env
+
+      - name: Build Docker Image
+        run: docker build -t myagmarsurenmike/meeting-app:latest .
 
       - name: Push Docker Image
         run: docker push myagmarsurenmike/meeting-app:latest
@@ -28,7 +31,9 @@ jobs:
     steps:
       - name: Pull Docker Image
         run: docker pull myagmarsurenmike/meeting-app:latest
-      - name : Delete old container
+
+      - name: Delete old container
         run: docker rm -f meeting-app-container || true
+
       - name: Run docker container
-        run: docker run -d -p 3000:3000 --name meeting-app-container myagmarsurenmike/meeting-app
+        run: docker run -d -p 3000:3000 --name meeting-app-container --env-file .env myagmarsurenmike/meeting-app:latest
