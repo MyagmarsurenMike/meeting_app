@@ -9,7 +9,7 @@ COPY package*.json ./
 
 # Install project dependencies
 # If you're using npm:
-RUN npm install --production --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 # If you're using yarn:
 # RUN yarn install
 
