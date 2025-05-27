@@ -10,7 +10,7 @@ COPY . .
 
 COPY .env .env
 
-RUN npm run build
+RUN npm run start
 
 EXPOSE 3000
 
