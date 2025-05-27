@@ -73,7 +73,7 @@ const MeetingRoom = () => {
               <div
                 className={cn(
                   "p-4 w-full max-w-xs overflow-y-auto transition-all duration-300 ",
-                  "md:static md:rounded-l-2xl md:relative md:block absolute right-0 top-0 rounded-l-2xl",
+                  "md:static md:rounded-l-2xl md:block absolute right-0 top-0 rounded-l-2xl",
                   "md:max-w-xs md:z-10"
                 )}
                 style={{
